@@ -1,0 +1,261 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Smart Calendar 2026</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:linear-gradient(45deg,#16222A,#3A6073);
+color:white;
+text-align:center;
+}
+
+#login{
+margin-top:120px;
+}
+
+input{
+padding:10px;
+margin:5px;
+border:none;
+border-radius:5px;
+}
+
+button{
+padding:10px 20px;
+background:orange;
+border:none;
+border-radius:5px;
+cursor:pointer;
+}
+
+#calendar{
+display:none;
+}
+
+.month{
+display:inline-block;
+background:white;
+color:black;
+margin:20px;
+padding:10px;
+border-radius:10px;
+box-shadow:0 10px 20px rgba(0,0,0,0.4);
+}
+
+table{
+border-collapse:collapse;
+}
+
+th{
+background:#333;
+color:white;
+padding:6px;
+}
+
+td{
+width:40px;
+height:40px;
+cursor:pointer;
+transition:0.3s;
+position:relative;
+}
+
+td:hover{
+background:orange;
+transform:scale(1.2) rotateY(20deg);
+}
+
+.sun{
+color:red;
+font-weight:bold;
+}
+
+.event{
+background:#27ae60;
+color:white;
+border-radius:50%;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="login">
+
+<h2>Calendar Login</h2>
+
+<input type="text" id="user" placeholder="User ID"><br>
+<input type="password" id="pass" placeholder="Password"><br>
+
+<button onclick="login()">Login</button>
+
+<p id="msg"></p>
+
+</div>
+
+<div id="calendar">
+
+<h1>Calendar 2026</h1>
+
+<div id="months"></div>
+
+</div>
+
+<script>
+
+function login(){
+
+var u=document.getElementById("user").value;
+var p=document.getElementById("pass").value;
+
+if(u=="a" && p=="1")
+{
+document.getElementById("login").style.display="none";
+document.getElementById("calendar").style.display="block";
+}
+else
+{
+document.getElementById("msg").innerHTML="Wrong Login";
+}
+
+}
+
+var year=2026;
+var monthsDiv=document.getElementById("months");
+
+var monthNames=[
+"January","February","March","April","May","June",
+"July","August","September","October","November","December"
+];
+
+var days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+var festivals={
+"1-1":"New Year",
+"26-1":"Republic Day",
+"15-8":"Independence Day",
+"2-10":"Gandhi Jayanti",
+"25-12":"Christmas"
+};
+
+function saveEvent(key,event){
+
+localStorage.setItem(key,event);
+
+}
+
+function getEvent(key){
+
+return localStorage.getItem(key);
+
+}
+
+for(var m=0;m<12;m++){
+
+var month=document.createElement("div");
+month.className="month";
+
+var title=document.createElement("h3");
+title.innerHTML=monthNames[m];
+month.appendChild(title);
+
+var table=document.createElement("table");
+
+var tr=document.createElement("tr");
+
+for(var d=0;d<7;d++){
+
+var th=document.createElement("th");
+th.innerHTML=days[d];
+
+if(d==0) th.className="sun";
+
+tr.appendChild(th);
+
+}
+
+table.appendChild(tr);
+
+var firstDay=new Date(year,m,1).getDay();
+var totalDays=new Date(year,m+1,0).getDate();
+
+var date=1;
+
+for(var i=0;i<6;i++){
+
+var row=document.createElement("tr");
+
+for(var j=0;j<7;j++){
+
+var cell=document.createElement("td");
+
+if(i==0 && j<firstDay){
+
+cell.innerHTML="";
+
+}
+else if(date>totalDays){
+
+break;
+
+}
+else{
+
+cell.innerHTML=date;
+
+if(j==0) cell.className="sun";
+
+var key=date+"-"+(m+1);
+
+if(festivals[key])
+cell.classList.add("event");
+
+if(getEvent(key))
+cell.classList.add("event");
+
+cell.onclick=function(){
+
+var d=this.innerHTML;
+var monthIndex=this.parentElement.parentElement.parentElement.parentElement.querySelector("h3").innerText;
+
+var event=prompt("Add Event for date "+d);
+
+if(event)
+{
+var key=d+"-"+(m+1);
+saveEvent(key,event);
+this.classList.add("event");
+alert("Event Saved");
+}
+
+};
+
+date++;
+
+}
+
+row.appendChild(cell);
+
+}
+
+table.appendChild(row);
+
+}
+
+month.appendChild(table);
+
+monthsDiv.appendChild(month);
+
+}
+
+</script>
+
+</body>
+</html>
