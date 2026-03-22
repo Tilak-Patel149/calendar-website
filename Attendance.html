@@ -1,0 +1,153 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Saturday Attendance 2026</title>
+
+<style>
+body { font-family: Arial; background:#f5f5f5; text-align:center; }
+h1 { background:#FF9800; color:white; padding:10px; }
+.container { overflow-x:auto; }
+table { border-collapse: collapse; background:white; margin:auto; min-width:1200px; }
+th, td { border:1px solid #ccc; padding:6px; text-align:center; white-space:nowrap; }
+th { background:#333; color:white; position:sticky; top:0; }
+.present { background:#4CAF50; color:white; }
+.absent { background:#f44336; color:white; }
+button { padding:6px 10px; margin:5px; cursor:pointer; }
+.delete-btn { background:#000; color:#fff; border:none; }
+.name-col { position:sticky; left:0; background:#db5151; font-weight:bold; }
+</style>
+</head>
+
+<body>
+
+<h1>Saturday Attendance Tracker 2026</h1>
+
+<input type="text" id="name" placeholder="Enter Student Name">
+<button onclick="addStudent()">Add</button>
+<button onclick="removeStudentByName()">Remove</button>
+
+<div class="container">
+<table id="table">
+<tr id="headerRow">
+<th class="name-col">Name</th>
+</tr>
+</table>
+</div>
+
+<script>
+function getAllSaturdays(year) {
+  let saturdays = [];
+  let date = new Date(year, 0, 1);
+
+  while (date.getFullYear() === year) {
+    if (date.getDay() === 6) {
+      saturdays.push(new Date(date));
+    }
+    date.setDate(date.getDate() + 1);
+  }
+  return saturdays;
+}
+
+const saturdays = getAllSaturdays(2026);
+
+function formatDate(d) {
+  return d.toLocaleDateString('en-GB');
+}
+
+// 🔥 DATA STORAGE
+let students = JSON.parse(localStorage.getItem("students")) || [];
+
+function saveData() {
+  localStorage.setItem("students", JSON.stringify(students));
+}
+
+function renderTable() {
+  const table = document.getElementById("table");
+  table.innerHTML = "<tr id='headerRow'><th class='name-col'>Name</th></tr>";
+
+  const header = document.getElementById("headerRow");
+
+  saturdays.forEach((date, i) => {
+    const th = document.createElement("th");
+    th.innerHTML = `W${i+1}<br>${formatDate(date)}`;
+    header.appendChild(th);
+  });
+
+  const total = document.createElement("th");
+  total.innerText = "Total";
+  header.appendChild(total);
+
+  const action = document.createElement("th");
+  action.innerText = "Action";
+  header.appendChild(action);
+
+  students.forEach((student, rowIndex) => {
+    const row = table.insertRow();
+
+    const nameCell = row.insertCell();
+    nameCell.innerHTML = student.name;
+    nameCell.className = "name-col";
+
+    student.attendance.forEach((status, colIndex) => {
+      const c = row.insertCell();
+      c.innerHTML = status;
+      c.className = status === "P" ? "present" : "absent";
+
+      c.onclick = () => {
+        student.attendance[colIndex] = status === "P" ? "A" : "P";
+        saveData();
+        renderTable();
+      };
+    });
+
+    const totalCell = row.insertCell();
+    totalCell.innerHTML = student.attendance.filter(s => s === "P").length;
+
+    const actionCell = row.insertCell();
+    const btn = document.createElement("button");
+    btn.innerText = "Remove";
+    btn.className = "delete-btn";
+    btn.onclick = () => {
+      students.splice(rowIndex, 1);
+      saveData();
+      renderTable();
+    };
+    actionCell.appendChild(btn);
+  });
+}
+
+function addStudent() {
+  const name = document.getElementById("name").value;
+  if(!name) return alert("Enter name");
+
+  students.push({
+    name: name,
+    attendance: Array(saturdays.length).fill("A")
+  });
+
+  saveData();
+  renderTable();
+  document.getElementById("name").value = "";
+}
+
+function removeStudentByName() {
+  const name = document.getElementById("name").value.toLowerCase();
+
+  const index = students.findIndex(s => s.name.toLowerCase() === name);
+  if(index !== -1) {
+    students.splice(index, 1);
+    saveData();
+    renderTable();
+  } else {
+    alert("Student not found");
+  }
+}
+
+// LOAD DATA
+renderTable();
+</script>
+
+</body>
+</html>
